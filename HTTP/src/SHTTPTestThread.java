@@ -4,10 +4,14 @@ import java.util.*;
 
 public class SHTTPTestThread extends Thread {
 
-    Socket welcomeSocket;
+//    final Socket welcomeSocket;
     String[] filename;
+    InetAddress serverIPAddress;
+    int serverPort;
     public SHTTPTestThread(InetAddress serverIPAddress, int serverPort, String[] filename) throws IOException {
-        welcomeSocket = new Socket(serverIPAddress,serverPort);
+//        welcomeSocket = new Socket(serverIPAddress,serverPort);
+        this.serverIPAddress = serverIPAddress;
+        this.serverPort = serverPort;
         this.filename = filename;
     }
 
@@ -15,17 +19,17 @@ public class SHTTPTestThread extends Thread {
 
         System.out.println("Thread " + this + " started.");
 //        while (true) {
-            // get a new request connection
-            Socket s = null;
-
-            synchronized (welcomeSocket) {
+            for (String value : filename) {
+                Socket welcomeSocket = null;
                 try {
-//                    s = welcomeSocket.accept();
-//                    System.out.println("Thread " + this
-//                            + " process request " + s);
-                    for(int i = 0; i < filename.length; i++) {
-//                        System.out.println(filename[i]);
-                        String sentence = "GET " + filename[i] + " HTTP/1.0";
+                    welcomeSocket = new Socket(serverIPAddress, serverPort);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                synchronized (welcomeSocket) {
+                    try {
+                        System.out.println(value);
+                        String sentence = "GET " + value + " HTTP/1.0";
 
                         // write to server
                         DataOutputStream outToServer
@@ -34,20 +38,22 @@ public class SHTTPTestThread extends Thread {
                         outToServer.writeBytes("Host: localhost\n");
                         outToServer.writeBytes("\n");
                         System.out.println("written to server; waiting for server reply...");
-                        System.out.println("From Server:");
-//                        // create read stream and receive from server
-//                        BufferedReader inFromServer
-//                                = new BufferedReader(new InputStreamReader(welcomeSocket.getInputStream()));
+//                        System.out.println("From Server:");
+
+                        // create read stream and receive from server
+                        BufferedReader inFromServer
+                                = new BufferedReader(new InputStreamReader(welcomeSocket.getInputStream()));
 //                        String sentenceFromServer;
-////                        System.out.println(inFromServer.readLine());
+//                        System.out.println(inFromServer.readLine());
 //                        while ((sentenceFromServer = inFromServer.readLine()) != null) {
 //                            System.out.println(sentenceFromServer);
 //                        }
-////                        welcomeSocket.close();
+                        welcomeSocket.close();
+                    } catch (IOException e) {
+                        System.out.println("E");
                     }
-                } catch (IOException e) {
                 }
-            } // end of extract a request
+            }// end of extract a request
 
 //            serveARequest( s );
 

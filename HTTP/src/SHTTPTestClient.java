@@ -19,6 +19,8 @@ public class SHTTPTestClient {
     public final static int THREAD_COUNT = 2;
     private SHTTPTestThread[] threads;
 
+    private static int TIME_NUM = 0;
+
     /* Constructor: starting all threads at once */
     public SHTTPTestClient(int serverPort, InetAddress serverIPAddress, int threadNum, String[] filename) {
 
@@ -34,6 +36,7 @@ public class SHTTPTestClient {
             for (int i = 0; i < threads.length; i++) {
                 threads[i] = new SHTTPTestThread(serverIPAddress, serverPort, filename);
                 threads[i].start();
+//                Thread.sleep(TIME_NUM * 1000L);
             }
         } catch (Exception e) {
             System.out.println("Server construction failed.");
@@ -86,7 +89,7 @@ public class SHTTPTestClient {
 
         // get file name and time of test in seconds
         String[] fileName1 = new String[100];
-        int fileNum = 0, timeNum = 0;
+        int fileNum = 0;
         if (args.length >= 10) {
             for(int i = 9; ; i++) {
                 if (args[i].compareTo("-T") != 0) {
@@ -99,7 +102,7 @@ public class SHTTPTestClient {
             }
         }
         if (args.length >= fileNum+10) {
-            timeNum = fileNum + 10;
+            TIME_NUM = Integer.parseInt(args[fileNum+10]);
         } else {
             System.out.println("usage:%java SHTTPTestClient -server <server> -servname <server name>\n" +
                     "-port <server port> -parallel <# of threads> -files <file name>\n" +
