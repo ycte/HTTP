@@ -34,9 +34,10 @@ public class SHTTPTestClient {
 
             // start all threads
             for (int i = 0; i < threads.length; i++) {
-                threads[i] = new SHTTPTestThread(serverIPAddress, serverPort, filename);
+                threads[i] = new SHTTPTestThread(serverIPAddress, serverPort, filename, TIME_NUM);
                 threads[i].start();
-//                Thread.sleep(TIME_NUM * 1000L);
+//                Thread.sleep(TIME_NUM);
+//                threads[i].interrupt();
             }
         } catch (Exception e) {
             System.out.println("Server construction failed.");
@@ -110,9 +111,7 @@ public class SHTTPTestClient {
             return;
         }
         String[] fileName = new String[fileNum];
-        for(int i = 0; i < fileNum; i++) {
-            fileName[i] = fileName1[i];
-        }
+        for(int i = 0; i < fileNum; i++) fileName[i] = fileName1[i];
 //        for(int i = 0; i < fileName.length; i++) {
 //            System.out.println(fileName[i]);
 //        }
@@ -124,8 +123,8 @@ public class SHTTPTestClient {
     public void run() {
 
         try {
-            for (int i = 0; i < threads.length; i++) {
-                threads[i].join();
+            for (SHTTPTestThread thread : threads) {
+                thread.join();
             }
             System.out.println("All threads finished. Exit");
         } catch (Exception e) {

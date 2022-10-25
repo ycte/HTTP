@@ -8,19 +8,28 @@ public class SHTTPTestThread extends Thread {
     String[] filename;
     InetAddress serverIPAddress;
     int serverPort;
-    public SHTTPTestThread(InetAddress serverIPAddress, int serverPort, String[] filename) throws IOException {
+    int TIME_NUM;
+    public SHTTPTestThread(InetAddress serverIPAddress, int serverPort, String[] filename, int TIME_NUM) throws IOException {
 //        welcomeSocket = new Socket(serverIPAddress,serverPort);
         this.serverIPAddress = serverIPAddress;
         this.serverPort = serverPort;
         this.filename = filename;
+        this.TIME_NUM = TIME_NUM;
     }
 
     public void run() {
-
+        int fileNum = 0;
+        long timeSum = 0, aveTime;
+        long byteSum = 0, aveByte;
         System.out.println("Thread " + this + " started.");
-//        while (true) {
+        long timeSrcFlag = System.currentTimeMillis();
+        while (true) {
+            long timeDstFlag = System.currentTimeMillis();
+            if (timeDstFlag - timeSrcFlag >= TIME_NUM * 1000L) {
+                break;
+            }
             for (String value : filename) {
-                Socket welcomeSocket = null;
+                Socket welcomeSocket;
                 try {
                     welcomeSocket = new Socket(serverIPAddress, serverPort);
                 } catch (IOException e) {
@@ -34,8 +43,11 @@ public class SHTTPTestThread extends Thread {
                         // write to server
                         DataOutputStream outToServer
                                 = new DataOutputStream(welcomeSocket.getOutputStream());
+                        long timeSrcFlagTemp = System.currentTimeMillis();
                         outToServer.writeBytes(sentence + '\n');
-                        outToServer.writeBytes("Host: localhost\n");
+                        String htName =  InetAddress.getLocalHost().getHostName();
+//                        System.out.println(htName);
+                        outToServer.writeBytes("Host: " + htName + "\n");
                         outToServer.writeBytes("\n");
                         System.out.println("written to server; waiting for server reply...");
 //                        System.out.println("From Server:");
@@ -43,6 +55,12 @@ public class SHTTPTestThread extends Thread {
                         // create read stream and receive from server
                         BufferedReader inFromServer
                                 = new BufferedReader(new InputStreamReader(welcomeSocket.getInputStream()));
+                        long timeDstFlagTemp = System.currentTimeMillis();
+                        timeSum += timeDstFlagTemp - timeSrcFlagTemp;
+                        System.out.println(timeDstFlagTemp-timeSrcFlagTemp);
+                        int bytesCnt = inFromServer.toString().getBytes().length;
+                        byteSum += bytesCnt;
+                        fileNum++;
 //                        String sentenceFromServer;
 //                        System.out.println(inFromServer.readLine());
 //                        while ((sentenceFromServer = inFromServer.readLine()) != null) {
@@ -57,8 +75,12 @@ public class SHTTPTestThread extends Thread {
 
 //            serveARequest( s );
 
-//        } // end while
-
+        } // end while
+        aveTime = timeSum / fileNum;
+        aveByte = byteSum / TIME_NUM;
+        System.out.println("timeSum: " + timeSum);
+        System.out.println("fileNum: " + fileNum + "\taveTime: " + aveTime +
+                "\taveByte: " + aveByte);
     } // end run
 
     private void serveARequest(Socket connSock) {
